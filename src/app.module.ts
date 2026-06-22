@@ -1,4 +1,5 @@
 import { Module } from '@nestjs/common';
+import { ConfigModule } from '@nestjs/config';
 import { MongooseModule } from '@nestjs/mongoose';
 
 import { AppController } from './app.controller';
@@ -8,7 +9,11 @@ import { User, UserSchema } from './users/user.schema';
 
 @Module({
   imports: [
-    MongooseModule.forRoot(process.env.MONGO_URI!),
+    ConfigModule.forRoot({ isGlobal: true }),
+
+    MongooseModule.forRoot(process.env.MONGO_URI as string, {
+      serverSelectionTimeoutMS: 5000,
+    }),
 
     MongooseModule.forFeature([
       {
@@ -17,7 +22,6 @@ import { User, UserSchema } from './users/user.schema';
       },
     ]),
   ],
-
   controllers: [AppController],
   providers: [AppService],
 })
