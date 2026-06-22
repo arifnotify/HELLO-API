@@ -19,7 +19,7 @@ import { User, UserSchema } from './users/user.schema';
       imports: [ConfigModule],
       inject: [ConfigService],
       useFactory: (configService: ConfigService) => {
-        const uri = configService.get<string>('MONGODB_URI');
+        const uri = configService.get<string>('MONGO_URI');
 
         if (!uri) {
           throw new Error('MONGO_URI is not defined in environment variables');
