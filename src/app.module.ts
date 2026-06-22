@@ -1,5 +1,5 @@
 import { Module } from '@nestjs/common';
-import { ConfigModule } from '@nestjs/config';
+import { ConfigModule, ConfigService } from '@nestjs/config';
 import { MongooseModule } from '@nestjs/mongoose';
 
 import { AppController } from './app.controller';
@@ -9,12 +9,30 @@ import { User, UserSchema } from './users/user.schema';
 
 @Module({
   imports: [
-    ConfigModule.forRoot({ isGlobal: true }),
-
-    MongooseModule.forRoot(process.env.MONGO_URI as string, {
-      serverSelectionTimeoutMS: 5000,
+    // ENV CONFIG
+    ConfigModule.forRoot({
+      isGlobal: true,
     }),
 
+    // MONGODB CONNECTION (SAFE + PRODUCTION READY)
+    MongooseModule.forRootAsync({
+      imports: [ConfigModule],
+      inject: [ConfigService],
+      useFactory: (configService: ConfigService) => {
+        const uri = configService.get<string>('MONGO_URI');
+
+        if (!uri) {
+          throw new Error('MONGO_URI is not defined in environment variables');
+        }
+
+        return {
+          uri,
+          serverSelectionTimeoutMS: 5000,
+        };
+      },
+    }),
+
+    // SCHEMA REGISTRATION
     MongooseModule.forFeature([
       {
         name: User.name,
